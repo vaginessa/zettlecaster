@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ZettleCaster">
         <activity
+            android:windowSoftInputMode="stateAlwaysVisible"
             android:name=".ui.login.ZettleActivity"
             android:label="@string/app_name">
             <intent-filter>

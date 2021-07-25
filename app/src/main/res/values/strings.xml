@@ -2,4 +2,5 @@
     <string name="app_name">ZettleCaster</string>
     <string name="title">Title</string>
     <string name="create">Create</string>
+    <string name="add_link">Add Link</string>
 </resources>
