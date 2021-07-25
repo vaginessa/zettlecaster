@@ -54,7 +54,7 @@
         android:allowUndo="true"
         android:focusedByDefault="false"
         android:gravity="top"
-        android:hint="@string/title"
+        android:hint="@string/content"
         android:inputType="textMultiLine"
         android:scrollHorizontally="false"
         android:selectAllOnFocus="false"

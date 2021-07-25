@@ -3,4 +3,5 @@
     <string name="title">Title</string>
     <string name="create">Create</string>
     <string name="add_link">Add Link</string>
+    <string name="content">Contents</string>
 </resources>
