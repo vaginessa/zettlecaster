@@ -1,6 +1,7 @@
 package com.example.zettlecaster.ui.login
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -21,20 +22,17 @@ import androidx.lifecycle.Observer
 import com.example.zettlecaster.databinding.ActivityLoginBinding
 import com.example.zettlecaster.databinding.LinksPopupBinding
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
-
 
 class ZettleActivity : AppCompatActivity() {
 
-    private lateinit var zettleViewModel: ZettleViewModel
-    private lateinit var binding: ActivityLoginBinding
-    private lateinit var linksPopup: AlertDialog
-
     companion object {
         const val REQUEST_PERMISSION = 42
-        const val REQUEST_FILECHOOSER = 43
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -42,7 +40,7 @@ class ZettleActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_PERMISSION)
         }
 
-        binding = ActivityLoginBinding.inflate(layoutInflater)
+        var binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val title = binding.title
@@ -52,27 +50,16 @@ class ZettleActivity : AppCompatActivity() {
 
         title.requestFocus()
 
-        zettleViewModel = ZettleViewModel()
-
-        zettleViewModel.loginFormState.observe(this@ZettleActivity, Observer {
-            val loginState = it ?: return@Observer
-
-            // disable login button unless both username / password is valid
-            create.isEnabled = loginState.isDataValid
-        })
-
         title.afterTextChanged {
-            zettleViewModel.zettleDataChanged(
-                    title.text.toString(),
-                    contents.text.toString()
-            )
+            create.isEnabled = title.text.isNotEmpty()
         }
+
         var parent = this
 
         contents.apply {
             create.setOnClickListener {
 
-                var filename = zettleViewModel.createZettle(title.text.toString(), contents.text.toString())
+                var filename = createZettle(title.text.toString(), contents.text.toString())
                 Toast.makeText(applicationContext, "Created zettle: $filename", Toast.LENGTH_SHORT).show()
                 title.setText("")
                 contents.setText("")
@@ -83,7 +70,7 @@ class ZettleActivity : AppCompatActivity() {
                 var popupView = LinksPopupBinding.inflate(layoutInflater)
 
                 // create the popup window
-                var width = LinearLayout.LayoutParams.WRAP_CONTENT
+                var width = LinearLayout.LayoutParams.MATCH_PARENT
                 var height = LinearLayout.LayoutParams.WRAP_CONTENT
                 var focusable = true
                 var popupWindow =  PopupWindow(popupView.root, width, height, focusable);
@@ -93,7 +80,7 @@ class ZettleActivity : AppCompatActivity() {
                 var path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
                 var buttons = Vector<Button>()
                 File("$path/Obsidian/Obsidian/").walk().forEach {
-                    if (it.isFile()) {
+                    if (it.isFile) {
                         var button = Button(parent)
                         var name = it.nameWithoutExtension
                         button.transformationMethod = null
@@ -108,12 +95,14 @@ class ZettleActivity : AppCompatActivity() {
                     }
                 }
 
-                popupView.root.setOnTouchListener { v, event ->
+                popupView.root.setOnTouchListener { _, _ ->
                     popupWindow.dismiss()
                     true
                 }
 
-                popupView.searchBar.doOnTextChanged { text, start, before, count ->
+                popupView.searchBar.requestFocus()
+
+                popupView.searchBar.doOnTextChanged { text, _, _, _ ->
                     var t = text ?: ""
                     var lowert = t.toString().lowercase()
                     buttons.forEach {
@@ -135,6 +124,28 @@ class ZettleActivity : AppCompatActivity() {
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun createZettle(title: String, content: String) : String {
+
+        var now = LocalDateTime.now()
+
+        var nowFmt = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+        var fileContents = """---
+type: zettle
+creation_time: $nowFmt
+---
+# $title            
+$content
+"""
+
+        var path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+        var zettleId = now.format(DateTimeFormatter.ofPattern("yyMMdd_")) + (now.hour * 3600 + now.minute * 60 + now.second).toString(36)
+        var filename = "${zettleId}-$title.md"
+        File("$path/Obsidian/Obsidian/Zettle", filename).writeText(fileContents)
+
+        return filename
     }
 }
 
