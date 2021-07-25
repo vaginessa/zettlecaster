@@ -130,7 +130,7 @@ class ZettleActivity : AppCompatActivity() {
 
         var now = LocalDateTime.now()
 
-        var nowFmt = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        var nowFmt = now.format (DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss"))
 
         var fileContents = """---
 type: zettle
@@ -149,9 +149,6 @@ $content
     }
 }
 
-/**
- * Extension function to simplify setting an afterTextChanged action to EditText components.
- */
 fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
     this.addTextChangedListener(object : TextWatcher {
         override fun afterTextChanged(editable: Editable?) {
@@ -159,7 +156,6 @@ fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
         }
 
         override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-
         override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
     })
 }
