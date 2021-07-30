@@ -22,6 +22,7 @@ import androidx.lifecycle.Observer
 import com.example.zettlecaster.databinding.ActivityLoginBinding
 import com.example.zettlecaster.databinding.LinksPopupBinding
 import java.io.File
+import java.lang.StringBuilder
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -82,7 +83,13 @@ class ZettleActivity : AppCompatActivity() {
                 File("$path/Obsidian/Obsidian/").walk().forEach {
                     if (it.isFile) {
                         var button = Button(parent)
-                        var name = it.nameWithoutExtension
+                        var name : String
+                        if (it.extension == "md") {
+                            name = it.nameWithoutExtension
+                        }else{
+                            name = it.name
+                        }
+
                         button.transformationMethod = null
                         button.text = name
                         button.setOnClickListener {
@@ -132,16 +139,34 @@ class ZettleActivity : AppCompatActivity() {
 
         var nowFmt = now.format (DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss"))
 
+        var secondInDayTest = now.hour * 3600 + now.minute * 60 + now.second // Range: 0, 86400
+        var builder = StringBuilder()
+
+        //var startChar = 0x1402
+        //var startChar = 0x3260
+        var startChar = 0x3400
+        for (i: Int in 0..0x1FF) {
+            builder.append(((i and 0x1FF) + startChar).toChar())
+        }
+
+        var chars = builder.toString()
+
         var fileContents = """---
 type: zettle
 creation_time: $nowFmt
 ---
 # $title            
 $content
-"""
+""" + chars
 
         var path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        var zettleId = now.format(DateTimeFormatter.ofPattern("yyMMdd_")) + (now.hour * 3600 + now.minute * 60 + now.second).toString(36)
+        var secondInDay = now.hour * 3600 + now.minute * 60 + now.second // Range: 0, 86400
+        // 17 bits necessary to represent the range
+        var secondInDayFirstChar = ((secondInDay and 0xFF) + startChar).toChar()
+        var secondInDaySecondChar = (((secondInDay shr 8) and 0x1FF) + startChar).toChar()
+
+
+        var zettleId = now.format(DateTimeFormatter.ofPattern("yyMMdd_")) + secondInDayFirstChar + secondInDaySecondChar
         var filename = "${zettleId}-$title.md"
         File("$path/Obsidian/Obsidian/Zettle", filename).writeText(fileContents)
 
