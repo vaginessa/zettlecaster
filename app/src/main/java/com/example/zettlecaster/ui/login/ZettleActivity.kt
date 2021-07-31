@@ -142,32 +142,25 @@ class ZettleActivity : AppCompatActivity() {
         var secondInDayTest = now.hour * 3600 + now.minute * 60 + now.second // Range: 0, 86400
         var builder = StringBuilder()
 
-        //var startChar = 0x1402
-        //var startChar = 0x3260
-        var startChar = 0x3400
-        for (i: Int in 0..0x1FF) {
-            builder.append(((i and 0x1FF) + startChar).toChar())
-        }
-
-        var chars = builder.toString()
-
         var fileContents = """---
 type: zettle
 creation_time: $nowFmt
 ---
 # $title            
 $content
-""" + chars
+"""
 
         var path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
         var secondInDay = now.hour * 3600 + now.minute * 60 + now.second // Range: 0, 86400
         // 17 bits necessary to represent the range
+
+        var startChar = 0x3400 // Start of the chinese character range we like for this
         var secondInDayFirstChar = ((secondInDay and 0xFF) + startChar).toChar()
         var secondInDaySecondChar = (((secondInDay shr 8) and 0x1FF) + startChar).toChar()
 
 
         var zettleId = now.format(DateTimeFormatter.ofPattern("yyMMdd_")) + secondInDayFirstChar + secondInDaySecondChar
-        var filename = "${zettleId}-$title.md"
+        var filename = "${zettleId}-$title.md".replace("/", "" + 0xA937.toChar())//0x2044.toChar())
         File("$path/Obsidian/Obsidian/Zettle", filename).writeText(fileContents)
 
         return filename
