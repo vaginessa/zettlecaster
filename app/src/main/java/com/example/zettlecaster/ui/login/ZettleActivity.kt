@@ -80,7 +80,7 @@ class ZettleActivity : AppCompatActivity() {
 
                 var path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
                 var buttons = Vector<Button>()
-                File("$path/Obsidian/Obsidian/").walk().forEach {
+                File("$path/Obsidian/").walk().forEach {
                     if (it.isFile) {
                         var button = Button(parent)
                         var name : String
@@ -161,7 +161,7 @@ $content
 
         var zettleId = now.format(DateTimeFormatter.ofPattern("yyMMdd_")) + secondInDayFirstChar + secondInDaySecondChar
         var filename = "${zettleId}-$title.md".replace("/", "" + 0xA937.toChar())//0x2044.toChar())
-        File("$path/Obsidian/Obsidian/Zettle", filename).writeText(fileContents)
+        File("$path/Obsidian/Zettle", filename).writeText(fileContents)
 
         return filename
     }
